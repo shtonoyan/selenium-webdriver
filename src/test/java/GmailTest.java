@@ -15,9 +15,11 @@ public class GmailTest {
 
     @Test
     public void testSuccessfullLogin(){
+        String login = "shtonoyan.test";
+        String password = "april192020";
         GmailHomePage gmailHomePage = new GmailHomePage(driver);
         gmailHomePage.open();
-        GmailAccountPage gmailAccountPage = gmailHomePage.login();
+        GmailAccountPage gmailAccountPage = gmailHomePage.login(login, password);
 
         Assert.assertTrue(gmailAccountPage.isLoginSuccessfull(), "Not successfull login");
 
