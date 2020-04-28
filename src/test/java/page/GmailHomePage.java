@@ -3,10 +3,18 @@ package page;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.util.List;
+
 public class GmailHomePage extends BasePage {
+    @FindBy(id = "logo")
+    public WebElement logo;
+    @FindBy(xpath = "//div[@class='lCoei YZVTmd SmR8']")
+    private List<WebElement> accounts;
+
     public GmailHomePage(WebDriver driver) {
         super(driver);
     }
@@ -42,5 +50,11 @@ public class GmailHomePage extends BasePage {
         nextBtn.click();
 
         return new GmailAccountPage(driver);
+    }
+
+    public boolean isLogoutSuccessfull() {
+        new WebDriverWait(driver, 10)
+                .until(ExpectedConditions.visibilityOf(logo));
+        return logo.isDisplayed();
     }
 }

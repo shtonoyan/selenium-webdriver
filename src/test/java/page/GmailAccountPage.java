@@ -7,6 +7,7 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GmailAccountPage extends BasePage {
@@ -31,11 +32,44 @@ public class GmailAccountPage extends BasePage {
     @FindBy(xpath = "//span[@class='bog']")
     private List<WebElement> drafItems;
 
+    @FindBy(xpath = "//tr[contains(@class,'zA')]")
+    private List<WebElement> mails;
+
+    @FindBy(xpath = "//input[@aria-label=\"Search mail\"]")
+    private WebElement searchField;
+
+    @FindBy(xpath = "//button[@data-tooltip='Show search options']")
+    private WebElement searchOptions;
+
+    @FindBy(xpath = "//input[@class='ZH nr aQa']")
+    private WebElement searchOptionFrom;
+
+    @FindBy(xpath = "//input[@class='ZH nr aQd']")
+    private WebElement searchOptionSubject;
+
+    @FindBy(xpath = "//div[@aria-label='Search Mail']")
+    private WebElement searchBtn;
+
+    @FindBy(xpath = "//span[@id and text()='Reply']")
+    private WebElement replyBtn;
+
+    @FindBy(xpath = "//img[@data-name='Shushanik Tonoyan']")
+    private WebElement repliedSign;
+
+    @FindBy(xpath = "//div[text()='Inbox']/ancestor::td/preceding-sibling::td/child::span[@title='Not starred']")
+    private List<WebElement> stars;
+
     @FindBy(xpath = "//*[@data-tooltip='Save & close']")
     private WebElement closeBtn;
 
     @FindBy(xpath = "//div[@class='dC']")
     private WebElement sendBtn;
+
+    @FindBy(xpath = "//a[contains(@aria-label, 'Google Account') ]")
+    private WebElement googleAccount;
+
+    @FindBy(xpath = "//a[text()='Sign out']")
+    private WebElement signOutBtn;
 
     protected GmailAccountPage(WebDriver driver) {
         super(driver);
@@ -46,31 +80,42 @@ public class GmailAccountPage extends BasePage {
         return logo.isDisplayed();
     }
 
-    public void createNewDraft(String recipient, String title, String messageContent) {
+    public GmailAccountPage composeNewMail() {
         composeBtn.click();
 
         new WebDriverWait(driver, 10)
                 .until(ExpectedConditions
                         .presenceOfElementLocated(By.xpath("//div[@class='AD']")));
+        return this;
+    }
+
+    public GmailAccountPage fillAddress(String recipient) {
         new WebDriverWait(driver, 10)
                 .until(ExpectedConditions.visibilityOf(address));
 
         address.sendKeys(recipient);
+        return this;
+    }
 
+    public GmailAccountPage fillTitle(String title) {
         subject.sendKeys(title);
-
-        new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(contentBox));
-
-        contentBox.sendKeys(messageContent);
-
         new WebDriverWait(driver, 10)
                 .until(ExpectedConditions
-                        .presenceOfElementLocated(By.xpath("//div[contains(text(),'Test mail')]")));
+                        .presenceOfElementLocated(By.xpath("//div[contains(text(),'" + title + "')]")));
+        return this;
+    }
 
+    public GmailAccountPage writeMessage(String messageContent) {
+        contentBox.sendKeys(messageContent);
+
+        return this;
+    }
+
+    public void saveAsDraft() {
         closeBtn.click();
     }
 
-    public boolean isNewDraftSaved() {
+    public GmailAccountPage openDrafts() {
         menuItems.get(4).click();
         new WebDriverWait(driver, 10)
                 .until(ExpectedConditions
@@ -78,8 +123,12 @@ public class GmailAccountPage extends BasePage {
         new WebDriverWait(driver, 10)
                 .until(ExpectedConditions
                         .elementToBeClickable(By.xpath("//span[@class='bog']")));
+        return this;
+    }
+
+    public boolean isNewDraftSaved(String title) {
         for (WebElement element : drafItems) {
-            if (element.getText().equals("Test mail"))
+            if (element.getText().equals(title))
                 break;
             return true;
         }
@@ -89,10 +138,12 @@ public class GmailAccountPage extends BasePage {
     public void openDraftMail(String title) {
         new WebDriverWait(driver, 10)
                 .until(ExpectedConditions
-                        .presenceOfElementLocated(By.xpath("//tr[.//*[contains(text(),'Draft')]]//td[@id]//span[contains(text(),'" + title + "')]")));
+                        .presenceOfElementLocated(By
+                                .xpath("//tr[.//*[contains(text(),'Draft')]]//td[@id]//span[contains(text(),'" + title + "')]")));
         WebElement draft = new WebDriverWait(driver, 10)
                 .until(ExpectedConditions
-                        .elementToBeClickable(By.xpath("//tr[.//*[contains(text(),'Draft')]]//td[@id]//span[contains(text(),'" + title + "')]")));
+                        .elementToBeClickable(By
+                                .xpath("//tr[.//*[contains(text(),'Draft')]]//td[@id]//span[contains(text(),'" + title + "')]")));
         draft.click();
     }
 
@@ -110,8 +161,98 @@ public class GmailAccountPage extends BasePage {
 
         WebElement sentMail = new WebDriverWait(driver, 10)
                 .until(ExpectedConditions
-                        .presenceOfElementLocated(By.xpath("//tr[.//div[text()='To: ']]//td[@id]//span[text()='" + title + "']")));
+                        .presenceOfElementLocated(By.xpath("//tr[.//div[text()='To: ']]//td[@id]//span[contains(text(),'" + title + "')]")));
 
         return sentMail.isDisplayed();
+    }
+
+    public GmailAccountPage openSearchOptions() {
+        searchOptions.click();
+        new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(searchBtn));
+        new WebDriverWait(driver, 10).until(ExpectedConditions.elementToBeClickable(searchBtn));
+        return this;
+    }
+
+    public GmailAccountPage fillSearchOptionFrom(String address) {
+        searchOptionFrom.sendKeys(address);
+        return this;
+    }
+
+    public GmailAccountPage fillSearchOptionSubject(String subject) {
+        searchOptionSubject.sendKeys(subject);
+        return this;
+    }
+
+    public void search() {
+        searchBtn.click();
+        new WebDriverWait(driver, 10)
+                .until(ExpectedConditions
+                        .presenceOfAllElementsLocatedBy(By.xpath("//div[text()='Inbox']")));
+    }
+
+    public GmailAccountPage openMailFromAddress(String address) {
+        WebElement searchResult = new WebDriverWait(driver, 10)
+                .until(ExpectedConditions
+                        .presenceOfElementLocated(By.xpath("//tr[.//span[@email='" + address + "']]//div[text()='Inbox']")));
+        searchResult.click();
+        return this;
+    }
+
+    public GmailAccountPage reply() {
+        new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(replyBtn));
+        replyBtn.click();
+        new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(sendBtn));
+        return this;
+    }
+
+    public void starrMails() {
+        stars.forEach(WebElement::click);
+    }
+
+    public GmailAccountPage openStarredMails() {
+        menuItems.get(1).click();
+        new WebDriverWait(driver, 10)
+                .until(ExpectedConditions
+                        .presenceOfAllElementsLocatedBy(By.xpath("//div[text()='Inbox']")));
+        return this;
+    }
+
+    public void unstarrMailsFromSender(String address) {
+        List<WebElement> starred = driver.findElements(By
+                .xpath("//div[text()='Inbox']//ancestor::tr[contains(@class,'zA') and . //span[@email='" + address + "']]//span[@title='Starred']"));
+        for (WebElement element : starred) {
+            element.click();
+            new WebDriverWait(driver, 10)
+                    .until(ExpectedConditions
+                            .invisibilityOf(element));
+        }
+    }
+
+    public List<Boolean> areMailsFromSenderStarred(String sender) {
+        List<WebElement> starredMails = driver.findElements(By.xpath("//tr[.//span[@email='" + sender + "']]//div[text()='Inbox']"));
+        List<Boolean> areDisplayed = new ArrayList<>();
+
+        starredMails.forEach(mail -> areDisplayed.add(mail.isDisplayed()));
+
+        return areDisplayed;
+    }
+
+    public boolean areMailsFromSenderUnstarred(String address) {
+        return driver.findElements(By
+                .xpath("//div[text()='Inbox']//ancestor::tr[contains(@class,'zA') and . //span[@email='" + address + "']]//span[@title='Starred']"))
+                .size() == 0;
+    }
+
+    public GmailAccountPage clickGoogleAccount() {
+        googleAccount.click();
+        new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(signOutBtn));
+        new WebDriverWait(driver, 10).until(ExpectedConditions.elementToBeClickable(signOutBtn));
+
+        return this;
+    }
+
+    public GmailHomePage logout() {
+        signOutBtn.click();
+        return new GmailHomePage(this.driver);
     }
 }
