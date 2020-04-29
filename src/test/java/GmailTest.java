@@ -21,7 +21,8 @@ public class GmailTest {
     public void createDraftSendIt() {
         GmailHomePage gmailHomePage = new GmailHomePage(driver);
         gmailHomePage.open();
-        GmailAccountPage gmailAccountPage = gmailHomePage.login(login, password);
+        GmailAccountPage gmailAccountPage = gmailHomePage
+                .fillLoginField(login).fillPasswordField(password);
 
         Assert.assertTrue(gmailAccountPage.isLoginSuccessfull(), "Not successfull login");
 
@@ -52,7 +53,7 @@ public class GmailTest {
         String messageContent = "Text";
         GmailHomePage gmailHomePage = new GmailHomePage(driver);
         gmailHomePage.open();
-        GmailAccountPage gmailAccountPage = gmailHomePage.login(login, password);
+        GmailAccountPage gmailAccountPage = gmailHomePage.fillLoginField(login).fillPasswordField(password);
 
         Assert.assertTrue(gmailAccountPage.isLoginSuccessfull(), "Not successfull login");
 
@@ -70,7 +71,7 @@ public class GmailTest {
 
         GmailHomePage gmailHomePage = new GmailHomePage(driver);
         gmailHomePage.open();
-        GmailAccountPage gmailAccountPage = gmailHomePage.login(login, password);
+        GmailAccountPage gmailAccountPage = gmailHomePage.fillLoginField(login).fillPasswordField(password);
 
         Assert.assertTrue(gmailAccountPage.isLoginSuccessfull(), "Not successfull login");
 
