@@ -1,8 +1,7 @@
 package page;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -64,6 +63,12 @@ public class GmailAccountPage extends BasePage {
 
     @FindBy(xpath = "//div[@class='dC']")
     private WebElement sendBtn;
+
+    @FindBy(xpath = "//input[@type='file']")
+    private WebElement attachFile;
+
+    @FindBy(xpath = "//span[@class='CJ']")
+    private WebElement moreBtn;
 
     @FindBy(xpath = "//a[contains(@aria-label, 'Google Account') ]")
     private WebElement googleAccount;
@@ -140,11 +145,14 @@ public class GmailAccountPage extends BasePage {
                 .until(ExpectedConditions
                         .presenceOfElementLocated(By
                                 .xpath("//tr[.//*[contains(text(),'Draft')]]//td[@id]//span[contains(text(),'" + title + "')]")));
+
+        JavascriptExecutor jsExec = (JavascriptExecutor) driver;
+
         WebElement draft = new WebDriverWait(driver, 10)
                 .until(ExpectedConditions
                         .elementToBeClickable(By
                                 .xpath("//tr[.//*[contains(text(),'Draft')]]//td[@id]//span[contains(text(),'" + title + "')]")));
-        draft.click();
+        jsExec.executeScript("arguments[0].click();", draft);
     }
 
     public void sendMail() {
@@ -156,8 +164,13 @@ public class GmailAccountPage extends BasePage {
                         .presenceOfElementLocated(By.xpath("//span[text()='Message sent.']")));
     }
 
-    public boolean isMailInSentMails(String title) {
+    public GmailAccountPage openSentMails() {
         menuItems.get(3).click();
+
+        return new GmailAccountPage(this.driver);
+    }
+
+    public boolean isMailInSentMails(String title) {
 
         WebElement sentMail = new WebDriverWait(driver, 10)
                 .until(ExpectedConditions
@@ -185,9 +198,6 @@ public class GmailAccountPage extends BasePage {
 
     public void search() {
         searchBtn.click();
-        new WebDriverWait(driver, 10)
-                .until(ExpectedConditions
-                        .presenceOfAllElementsLocatedBy(By.xpath("//div[text()='Inbox']")));
     }
 
     public GmailAccountPage openMailFromAddress(String address) {
@@ -241,6 +251,67 @@ public class GmailAccountPage extends BasePage {
         return driver.findElements(By
                 .xpath("//div[text()='Inbox']//ancestor::tr[contains(@class,'zA') and . //span[@email='" + address + "']]//span[@title='Starred']"))
                 .size() == 0;
+    }
+
+    public GmailAccountPage attachFile(String filePath) {
+        attachFile.sendKeys(filePath);
+        new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[@aria-label='Remove attachment']")));
+
+        return new GmailAccountPage(this.driver);
+    }
+
+    public GmailAccountPage boldTheMailContent() {
+
+        new Actions(driver).keyDown(Keys.CONTROL).sendKeys("a").sendKeys("b").keyUp(Keys.CONTROL).build().perform();
+        return new GmailAccountPage(this.driver);
+    }
+
+    public void dropMailToTrashBin(String title) {
+        openSearchOptions().fillSearchOptionSubject(title).search();
+        WebElement mail = new WebDriverWait(driver, 10)
+                .until(ExpectedConditions
+                        .presenceOfElementLocated(By.xpath("//div[text()='Inbox']//ancestor::div[@class='xT']")));
+        highlightElement(driver, mail);
+
+        moreBtn.click();
+        new WebDriverWait(driver, 10)
+                .until(ExpectedConditions.visibilityOf(menuItems.get(10)));
+        new Actions(driver).dragAndDrop(mail, menuItems.get(10)).build().perform();
+
+        new WebDriverWait(driver, 10)
+                .until(ExpectedConditions
+                        .invisibilityOfElementLocated(By.xpath("//span[contains(text(),'Conversation')]")));
+
+    }
+
+    public GmailAccountPage openTrashBit() {
+        new WebDriverWait(driver, 10)
+                .until(ExpectedConditions
+                        .presenceOfAllElementsLocatedBy(By.xpath("//div[contains(@class,'aim')]")));
+        new WebDriverWait(driver, 10)
+                .until(ExpectedConditions
+                        .elementToBeClickable(menuItems.get(10)));
+
+        menuItems.get(10).click();
+
+        new WebDriverWait(driver, 10)
+                .until(ExpectedConditions
+                        .presenceOfAllElementsLocatedBy(By.xpath("//span[@class='bog']")));
+        return this;
+    }
+
+    public boolean isMailInTrashBin(String title) {
+        openSearchOptions().fillSearchOptionSubject(title).search();
+        WebElement trashMail = new WebDriverWait(driver, 10)
+                .until(ExpectedConditions
+                        .presenceOfElementLocated(By.xpath("//tr[.//div[text()='Trash']]//td[@id]//span[contains(text(),'" + title + "')]")));
+
+        return trashMail.isDisplayed();
+    }
+
+    private void highlightElement(WebDriver driver, WebElement element) {
+        JavascriptExecutor jsExecutor = ((JavascriptExecutor) driver);
+        jsExecutor.executeScript("arguments[0].style.backgroundColor = 'yellow'", element);
     }
 
     public GmailAccountPage clickGoogleAccount() {
